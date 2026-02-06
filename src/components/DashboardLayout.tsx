@@ -24,10 +24,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-1.5 rounded-lg bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
+              
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-semibold text-sm text-foreground">ZeroTrust Intranet</h1>
+              <h1 className="font-semibold text-sm text-foreground">ERP Portal</h1>
               <p className="text-xs text-muted-foreground font-mono">CONTINUOUS VERIFICATION</p>
             </div>
           </div>
