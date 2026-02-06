@@ -51,7 +51,7 @@ const LoginPage = () => {
   return (
     <div
   className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-  style={{ backgroundImage: "url('/bg-campus.jpg')" }}
+  style={{ backgroundImage: "url('/back.jpeg')" }}
 >
 
       {/* Background decoration */}
