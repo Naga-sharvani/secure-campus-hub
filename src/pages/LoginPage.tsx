@@ -65,8 +65,7 @@ const LoginPage = () => {
           {/* <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
             <Shield className="h-10 w-10 text-primary" />
           </div> */}
-          <h1 className="text-2xl font-bold text-foreground">Kasukabe erp Portal</h1>
-          <p className="text-sm text-muted-foreground mt-1 font-mono tracking-wider">SECURE ACCESS PORTAL</p>
+          <h1 className="text-2xl font-bold text-foreground">College ERP Portal</h1>
         </div>
 
         {/* Login Card */}
