@@ -49,7 +49,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background security-grid flex items-center justify-center p-4">
+    <div
+  className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+  style={{ backgroundImage: "url('/bg-campus.jpg')" }}
+>
+
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
