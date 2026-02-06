@@ -62,10 +62,10 @@ const LoginPage = () => {
       <div className="w-full max-w-md relative">
         {/* Logo */}
         <div className="text-center mb-8 animate-slide-up">
-          <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
+          {/* <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
             <Shield className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">ZeroTrust Intranet</h1>
+          </div> */}
+          <h1 className="text-2xl font-bold text-foreground">Kasukabe erp Portal</h1>
           <p className="text-sm text-muted-foreground mt-1 font-mono tracking-wider">SECURE ACCESS PORTAL</p>
         </div>
 
@@ -84,7 +84,7 @@ const LoginPage = () => {
                   id="username"
                   value={username}
                   onChange={(e) => { setUsername(e.target.value); setError(""); }}
-                  placeholder="Enter username"
+                  placeholder="Enter your username"
                   className="mt-1 bg-muted/50"
                 />
               </div>
@@ -149,9 +149,9 @@ const LoginPage = () => {
               </Button>
 
               <div className="pt-3 border-t border-border/50">
-                <p className="text-xs text-muted-foreground text-center font-mono">
+                {/* <p className="text-xs text-muted-foreground text-center font-mono">
                   Demo: student1 / faculty1 / admin1 • Password: pass123
-                </p>
+                </p> */}
               </div>
             </div>
           )}
@@ -169,7 +169,7 @@ const LoginPage = () => {
 
               <div>
                 <Label className="text-muted-foreground text-sm">Security Question</Label>
-                <p className="text-foreground font-medium mt-1">What is your mother's maiden name?</p>
+                <p className="text-foreground font-medium mt-1">What is your pet name?</p>
               </div>
 
               <div>
@@ -233,7 +233,7 @@ const LoginPage = () => {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 font-mono animate-fade-in">
-          ZERO-TRUST ARCHITECTURE • EVERY ACTION VERIFIED
+ 33 EVERY ACTION VERIFIED
         </p>
       </div>
     </div>
