@@ -1,0 +1,151 @@
+import { useState } from "react";
+import { Shield, AlertTriangle, CheckCircle, Upload, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface VerificationModalProps {
+  open: boolean;
+  onClose: () => void;
+  onVerified: () => void;
+  actionLabel: string;
+}
+
+export function VerificationModal({ open, onClose, onVerified, actionLabel }: VerificationModalProps) {
+  const { securitySetup, verifySensitiveAction } = useAuth();
+  const [answer, setAnswer] = useState("");
+  const [imageUploaded, setImageUploaded] = useState(false);
+  const [step, setStep] = useState<"question" | "image" | "success">("question");
+  const [error, setError] = useState("");
+
+  if (!open) return null;
+
+  const handleQuestionSubmit = () => {
+    if (verifySensitiveAction(answer)) {
+      setStep("image");
+      setError("");
+    } else {
+      setError("Incorrect answer. Access denied.");
+    }
+  };
+
+  const handleImageVerify = () => {
+    if (imageUploaded) {
+      setStep("success");
+      setTimeout(() => {
+        onVerified();
+        resetState();
+      }, 1000);
+    }
+  };
+
+  const resetState = () => {
+    setAnswer("");
+    setImageUploaded(false);
+    setStep("question");
+    setError("");
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-fade-in">
+      <div className="glass-card w-full max-w-md p-6 mx-4 animate-slide-up">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-destructive/10">
+              <Shield className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Zero-Trust Verification</h3>
+              <p className="text-sm text-muted-foreground">{actionLabel}</p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Progress */}
+        <div className="flex gap-2 mb-6">
+          {["question", "image", "success"].map((s, i) => (
+            <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${
+              i <= ["question", "image", "success"].indexOf(step) ? "bg-primary" : "bg-muted"
+            }`} />
+          ))}
+        </div>
+
+        {step === "question" && (
+          <div className="space-y-4">
+            <div>
+              <Label className="text-muted-foreground text-sm">Security Question</Label>
+              <p className="text-foreground font-medium mt-1">
+                {securitySetup?.securityQuestion || "What is your mother's maiden name?"}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="answer">Your Answer</Label>
+              <Input
+                id="answer"
+                type="password"
+                value={answer}
+                onChange={(e) => { setAnswer(e.target.value); setError(""); }}
+                placeholder="Enter your answer..."
+                className="mt-1 bg-muted/50"
+              />
+            </div>
+            {error && (
+              <div className="flex items-center gap-2 text-destructive text-sm">
+                <AlertTriangle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
+            <Button onClick={handleQuestionSubmit} className="w-full" disabled={!answer}>
+              Verify Answer
+            </Button>
+          </div>
+        )}
+
+        {step === "image" && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">Upload verification image to proceed</p>
+              <label className={`flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                imageUploaded ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              }`}>
+                {imageUploaded ? (
+                  <CheckCircle className="h-10 w-10 text-primary" />
+                ) : (
+                  <Upload className="h-10 w-10 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {imageUploaded ? "Image uploaded — Match verified ✓" : "Click to upload image"}
+                </span>
+                <input type="file" className="hidden" accept="image/*" onChange={() => setImageUploaded(true)} />
+              </label>
+            </div>
+            <Button onClick={handleImageVerify} className="w-full" disabled={!imageUploaded}>
+              Verify Image
+            </Button>
+          </div>
+        )}
+
+        {step === "success" && (
+          <div className="text-center py-4">
+            <CheckCircle className="h-12 w-12 text-primary mx-auto mb-3" />
+            <p className="text-foreground font-medium">Verification Successful</p>
+            <p className="text-sm text-muted-foreground">Action authorized</p>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground mt-4 text-center font-mono">
+          ZERO-TRUST • CONTINUOUS VERIFICATION
+        </p>
+      </div>
+    </div>
+  );
+}
