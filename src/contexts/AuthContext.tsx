@@ -36,23 +36,23 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const MOCK_USERS: Record<string, { password: string; user: Omit<User, "isFirstLogin"> }> = {
   student1: {
     password: "pass123",
-    user: { id: "s1", username: "student1", role: "student", name: "Arjun Sharma", rollNumber: "CS2024001", department: "Computer Science" },
+    user: { id: "s1", username: "student@stu", role: "student", name: "Himavari", rollNumber: "160124733087", department: "Computer Science" },
   },
   faculty1: {
     password: "pass123",
-    user: { id: "f1", username: "faculty1", role: "faculty", name: "Dr. Priya Mehta", department: "Computer Science" },
+    user: { id: "f1", username: "faculty@fac", role: "faculty", name: "Bochan", department: "Computer Science" },
   },
   admin1: {
     password: "pass123",
-    user: { id: "a1", username: "admin1", role: "admin", name: "Rajesh Kumar", department: "Administration" },
+    user: { id: "a1", username: "admin@ad", role: "admin", name: "Shinchan", department: "Administration" },
   },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [securitySetup, setSecuritySetup] = useState<SecuritySetup | null>({
-    securityQuestion: "What is your mother's maiden name?",
-    securityAnswer: "smith",
+    securityQuestion: "What is your pet name?",
+    securityAnswer: "jimmy",
   });
   const [knownUsers, setKnownUsers] = useState<Set<string>>(new Set());
   const [pendingLogout, setPendingLogout] = useState(false);
