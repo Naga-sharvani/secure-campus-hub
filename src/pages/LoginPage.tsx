@@ -73,7 +73,8 @@ const LoginPage = () => {
           {step === "credentials" && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-4 border-b border-border/50">
-
+                <Lock className="h-4 w-4 text-primary" />
+                
               </div>
 
               <div>
