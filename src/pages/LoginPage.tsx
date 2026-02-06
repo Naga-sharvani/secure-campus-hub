@@ -233,7 +233,7 @@ const LoginPage = () => {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 font-mono animate-fade-in">
- 33 EVERY ACTION VERIFIED
+  EVERY ACTION VERIFIED
         </p>
       </div>
     </div>
