@@ -36,15 +36,15 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const MOCK_USERS: Record<string, { password: string; user: Omit<User, "isFirstLogin"> }> = {
   student1: {
     password: "pass123",
-    user: { id: "s1", username: "student@stu", role: "student", name: "Himavari", rollNumber: "160124733087", department: "Computer Science" },
+    user: { id: "s1", username: "himavari@stu", role: "student", name: "Himavari", rollNumber: "160124733087", department: "Computer Science" },
   },
   faculty1: {
     password: "pass123",
-    user: { id: "f1", username: "faculty@fac", role: "faculty", name: "Bochan", department: "Computer Science" },
+    user: { id: "f1", username: "bochan@fac", role: "faculty", name: "Bochan", department: "Computer Science" },
   },
   admin1: {
     password: "pass123",
-    user: { id: "a1", username: "admin@ad", role: "admin", name: "Shinchan", department: "Administration" },
+    user: { id: "a1", username: "shinchan@ad", role: "admin", name: "Shinchan", department: "Administration" },
   },
 };
 
