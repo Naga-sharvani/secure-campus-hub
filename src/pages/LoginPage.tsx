@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
+import {getRole} from "../lib/auth.js";
 
 type LoginStep = "credentials" | "admin-verify" | "admin-image";
 
@@ -47,6 +48,14 @@ const LoginPage = () => {
       verifyAdmin(securityAnswer); // This will set the user
     }
   };
+
+  function handleLoginRole(email){
+    const role= getRole(email);
+    
+    localStorage.setItem("role",role);
+    localStorage.setItem("email",email);
+
+  }
 
   return (
     <div
