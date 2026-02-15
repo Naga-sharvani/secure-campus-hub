@@ -1,4 +1,8 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+//isFirstLogin thisesa if want add again
+
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
+import {getRole} from "../lib/auth.js";
+import { set } from "date-fns";
 
 export type UserRole = "student" | "faculty" | "admin";
 
@@ -9,7 +13,7 @@ export interface User {
   name: string;
   rollNumber?: string;
   department?: string;
-  isFirstLogin: boolean;
+  // isFirstLogin: boolean;
 }
 
 export interface SecuritySetup {
@@ -23,68 +27,85 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string, role?: UserRole) => { success: boolean; error?: string; needsAdminVerification?: boolean };
   logout: () => void;
+  confirmLogout:(answer:string) =>boolean;
   verifyAdmin: (answer: string) => boolean;
   verifySensitiveAction: (answer: string) => boolean;
   saveSecuritySetup: (setup: SecuritySetup) => void;
   securitySetup: SecuritySetup | null;
   pendingLogout: boolean;
   setPendingLogout: (v: boolean) => void;
+ 
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const MOCK_USERS: Record<string, { password: string; user: Omit<User, "isFirstLogin"> }> = {
-  student1: {
-    password: "pass123",
-    user: { id: "s1", username: "himavari@stu", role: "student", name: "Himavari", rollNumber: "160124733087", department: "Computer Science" },
-  },
-  faculty1: {
-    password: "pass123",
-    user: { id: "f1", username: "bochan@fac", role: "faculty", name: "Bochan", department: "Computer Science" },
-  },
-  admin1: {
-    password: "pass123",
-    user: { id: "a1", username: "shinchan@ad", role: "admin", name: "Shinchan", department: "Administration" },
-  },
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [securitySetup, setSecuritySetup] = useState<SecuritySetup | null>({
-    securityQuestion: "What is your pet name?",
-    securityAnswer: "jimmy",
-  });
+  const [securitySetup, setSecuritySetup] = useState<SecuritySetup | null>(null);
   const [knownUsers, setKnownUsers] = useState<Set<string>>(new Set());
   const [pendingLogout, setPendingLogout] = useState(false);
+  const [pendingUser,setPendingUser] =useState<User |null>(null);
 
-  const login = useCallback((username: string, password: string, role?: UserRole) => {
-    const record = MOCK_USERS[username];
-    if (!record) return { success: false, error: "User not found" };
-    if (record.password !== password) return { success: false, error: "Invalid password" };
-    if (role && record.user.role !== role) return { success: false, error: "Role mismatch" };
+  useEffect(()=>{
+    const stored=localStorage.getItem("securitySetup");
+    if(stored){
+      setSecuritySetup(JSON.parse(stored));
 
-    const isFirstLogin = !knownUsers.has(username);
-    if (isFirstLogin) {
-      setKnownUsers((prev) => new Set(prev).add(username));
+    }
+  },[]);
+
+  useEffect(()=>{
+    if(securitySetup){
+      localStorage.setItem("securitySetup",JSON.stringify(securitySetup));
+    }
+  });
+
+ 
+
+  const login = useCallback((username: string, password: string)=> {
+    const normalisedName= username.toLowerCase().trim();
+    const role= getRole(normalisedName);
+
+    if(!role){
+      return {success:false, error:"Invalid user"};
     }
 
-    if (record.user.role === "admin" && securitySetup) {
+    if(password!=="pass123"){
+      return { success: false, error: "Invalid password or username" };
+    }
+    const name=normalisedName.split("@")[0];
+
+    const record: User={
+      id: crypto.randomUUID(),
+      username: normalisedName,
+      role,
+      name,
+      rollNumber : role==="student"? "!60124733087": undefined,
+      department: role==="admin"? "Administrator":"Computer Science"
+    }
+    
+     if (role === "admin" && securitySetup) {
+      setPendingUser(record);
       return { success: true, needsAdminVerification: true };
     }
 
-    setUser({ ...record.user, isFirstLogin });
+    
+    setUser(record);
     return { success: true };
   }, [knownUsers, securitySetup]);
 
   const verifyAdmin = useCallback((answer: string) => {
-    if (!securitySetup) return false;
+    if (!securitySetup || !pendingUser) return false;
     if (answer.toLowerCase().trim() === securitySetup.securityAnswer.toLowerCase().trim()) {
-      const record = MOCK_USERS["admin1"];
-      setUser({ ...record.user, isFirstLogin: false });
+      
+      setUser(pendingUser);
+      setPendingUser(null);
       return true;
     }
     return false;
-  }, [securitySetup]);
+  }, [securitySetup,pendingUser]);
+
 
   const verifySensitiveAction = useCallback((answer: string) => {
     if (!securitySetup) return true;
@@ -95,20 +116,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSecuritySetup(setup);
   }, []);
 
+  const confirmLogout=useCallback((answer:string)=>{
+    if (answer.toLowerCase().trim() === securitySetup?.securityAnswer.toLowerCase().trim()) {
+      setUser(null);
+      setPendingLogout(false);
+      return true;
+    }
+    return false;
+  },[securitySetup]);
+
   const logout = useCallback(() => {
-    setUser(null);
-    setPendingLogout(false);
+    // setUser(null);
+    setPendingLogout(true);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, verifyAdmin, verifySensitiveAction, saveSecuritySetup, securitySetup, pendingLogout, setPendingLogout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout,confirmLogout, verifyAdmin, verifySensitiveAction, saveSecuritySetup, securitySetup, pendingLogout, setPendingLogout}}>
       {children}
     </AuthContext.Provider>
   );
-}
 
+}
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
+

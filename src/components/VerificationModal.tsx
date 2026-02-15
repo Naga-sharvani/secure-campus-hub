@@ -84,7 +84,7 @@ export function VerificationModal({ open, onClose, onVerified, actionLabel }: Ve
             <div>
               <Label className="text-muted-foreground text-sm">Security Question</Label>
               <p className="text-foreground font-medium mt-1">
-                {securitySetup?.securityQuestion || "What is your mother's maiden name?"}
+                {securitySetup?.securityQuestion || "Set your custom security question"}
               </p>
             </div>
             <div>

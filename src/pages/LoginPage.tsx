@@ -25,13 +25,26 @@ const LoginPage = () => {
       setError("All fields are required");
       return;
     }
-    const result = login(username, password, role || undefined);
-    if (!result.success) {
+
+    const detectedRole=getRole(username);
+    if(!detectedRole){
+      setError("Invalid username");
+      return;
+    }
+
+    const result=login(username,password);
+    if(!result.success){
       setError(result.error || "Login failed");
-    } else if (result.needsAdminVerification) {
+      return;
+    }
+
+    //understand theseee
+    else if(result.needsAdminVerification){
       setStep("admin-verify");
       setError("");
     }
+
+   
   };
 
   const handleAdminVerify = () => {
@@ -118,31 +131,7 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <div>
-                <Label>Role</Label>
-                <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-                  <SelectTrigger className="mt-1 bg-muted/50">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-student" /> Student
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="faculty">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-faculty" /> Faculty
-                      </span>
-                    </SelectItem>
-                    <SelectItem value="admin">
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-admin" /> Admin
-                      </span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              
 
               {error && (
                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-lg">

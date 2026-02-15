@@ -7,12 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { SECURITY_QUESTIONS } from "@/data/mockData";
 
+
 interface LogoutModalProps {
   open: boolean;
   onClose: () => void;
 }
 
 export function LogoutModal({ open, onClose }: LogoutModalProps) {
+  const { confirmLogout } = useAuth();
   const { logout, saveSecuritySetup } = useAuth();
   const [question, setQuestion] = useState(SECURITY_QUESTIONS[0]);
   const [customQuestion, setCustomQuestion] = useState("");
@@ -22,11 +24,18 @@ export function LogoutModal({ open, onClose }: LogoutModalProps) {
   if (!open) return null;
 
   const handleConfirm = () => {
-    saveSecuritySetup({
-      securityQuestion: useCustom ? customQuestion : question,
+   
+
+    if(useCustom && customQuestion.trim()){
+      saveSecuritySetup({
+      securityQuestion: customQuestion,
       securityAnswer: answer,
     });
-    logout();
+  }
+   const success=confirmLogout(answer);
+    if(!success) return;
+
+    
   };
 
   const isValid = answer.trim().length > 0 && (useCustom ? customQuestion.trim().length > 0 : true);
