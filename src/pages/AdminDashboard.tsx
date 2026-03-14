@@ -1,4 +1,5 @@
-import { useState } from "react";
+import {useState} from "react";
+import React from "react";
 import { Users, ClipboardList, Bell, MessageSquare, Trash2, Upload, AlertTriangle, Plus, Save } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { VerificationModal } from "@/components/VerificationModal";
@@ -54,6 +55,32 @@ const AdminDashboard = () => {
     setShowNewNotice(false);
   };
 
+ const testImage = async (file: File) => {
+  const base64 = await fileToBase64(file);
+
+  const res = await fetch("http://localhost:5000/classify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ image: base64 }),
+  });
+
+  const data = await res.json();
+  console.log("HF result:", data);
+};
+
+const fileToBase64 = (file: File) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(",")[1]);
+    };    reader.onerror = reject;
+  });
+
+
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "attendance", label: "Attendance", icon: <ClipboardList className="h-4 w-4" /> },
     { id: "accounts", label: "Accounts", icon: <Users className="h-4 w-4" /> },
@@ -66,6 +93,17 @@ const AdminDashboard = () => {
       <div className="mb-6 animate-slide-up">
         <h2 className="text-xl font-bold text-foreground">Admin Dashboard</h2>
         <p className="text-sm text-muted-foreground">Full access • All actions require verification</p>
+      </div>
+
+      <div className="mb-6">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) testImage(file);
+      }}
+      />
       </div>
 
       {/* Stats */}

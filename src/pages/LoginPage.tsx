@@ -44,8 +44,9 @@ const LoginPage = () => {
       setError("");
     }
 
-   
   };
+
+  // console.log(import.meta.env.VITE_HF_API_KEY);
 
   const handleAdminVerify = () => {
     if (verifyAdmin(securityAnswer)) {
