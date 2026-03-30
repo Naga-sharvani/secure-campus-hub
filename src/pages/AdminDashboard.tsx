@@ -57,19 +57,27 @@ const AdminDashboard = () => {
 
  const testImage = async (file: File) => {
   const base64 = await fileToBase64(file);
+   const securitySetup = JSON.parse(
+    localStorage.getItem("securitySetup") || "{}"
+    );
 
-  const res = await fetch("http://localhost:5000/classify", {
+    const label = securitySetup.imageLabel;
+
+  const res = await fetch("http://localhost:5000/match", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ image: base64 }),
+   
+    body: JSON.stringify({
+      text: label,  
+      image: base64,
+    }),
   });
 
   const data = await res.json();
-  console.log("HF result:", data);
+  console.log("YOLO result:", data);
 };
-
 const fileToBase64 = (file: File) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();

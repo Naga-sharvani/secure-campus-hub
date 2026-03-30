@@ -5,6 +5,7 @@ import io
 
 app = FastAPI()
 model = YOLO("yolov8n.pt")
+print("hey")
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
