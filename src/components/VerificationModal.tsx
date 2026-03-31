@@ -15,37 +15,65 @@ interface VerificationModalProps {
 export function VerificationModal({ open, onClose, onVerified, actionLabel }: VerificationModalProps) {
   const { securitySetup, verifySensitiveAction } = useAuth();
   const [answer, setAnswer] = useState("");
-  const [imageUploaded, setImageUploaded] = useState(false);
-  const [step, setStep] = useState<"question" | "image" | "success">("question");
+  const [step, setStep] = useState<"question" | "image" | "success">(
+  securitySetup?.method === "image"
+    ? "image"
+    : "question"
+  );  
   const [error, setError] = useState("");
 
   if (!open) return null;
 
   const handleQuestionSubmit = () => {
-    if (verifySensitiveAction(answer)) {
-      setStep("image");
-      setError("");
-    } else {
-      setError("Incorrect answer. Access denied.");
-    }
-  };
+  if (verifySensitiveAction(answer)) {
+    setStep("success");
 
-  const handleImageVerify = () => {
-    if (imageUploaded) {
-      setStep("success");
-      setTimeout(() => {
-        onVerified();
-        resetState();
-      }, 1000);
-    }
-  };
+    setTimeout(() => {
+      onVerified();
+      resetState();
+    }, 1000);
+  } else {
+    setError("Incorrect answer. Access denied.");
+  }
+};
 
-  const resetState = () => {
-    setAnswer("");
-    setImageUploaded(false);
-    setStep("question");
-    setError("");
-  };
+  const handleImageVerify = async (file: File) => {
+  if (!securitySetup?.imageLabel) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("http://localhost:8000/match", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (
+    data.label?.toLowerCase() ===
+    securitySetup.imageLabel.toLowerCase()
+  ) {
+    setStep("success");
+
+    setTimeout(() => {
+      onVerified();
+      resetState();
+    }, 1000);
+  } else {
+    setError("Incorrect object detected");
+  }
+};
+
+const resetState = () => {
+  setAnswer("");
+  setStep(
+    securitySetup?.method === "image"
+      ? "image"
+      : "question"
+  );
+  setError("");
+};
 
   const handleClose = () => {
     resetState();
@@ -114,23 +142,24 @@ export function VerificationModal({ open, onClose, onVerified, actionLabel }: Ve
           <div className="space-y-4">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-4">Upload verification image to proceed</p>
-              <label className={`flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
-                imageUploaded ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-              }`}>
-                {imageUploaded ? (
-                  <CheckCircle className="h-10 w-10 text-primary" />
-                ) : (
-                  <Upload className="h-10 w-10 text-muted-foreground" />
-                )}
-                <span className="text-sm text-muted-foreground">
-                  {imageUploaded ? "Image uploaded — Match verified ✓" : "Click to upload image"}
-                </span>
-                <input type="file" className="hidden" accept="image/*" onChange={() => setImageUploaded(true)} />
-              </label>
+              <label className="flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-colors border-border hover:border-primary/50">
+  <Upload className="h-10 w-10 text-muted-foreground" />
+
+  <span className="text-sm text-muted-foreground">
+    Click to upload verification image
+  </span>
+
+  <input
+    type="file"
+    className="hidden"
+    accept="image/*"
+    onChange={(e) =>
+      handleImageVerify(e.target.files?.[0]!)
+    }
+  />
+</label>
             </div>
-            <Button onClick={handleImageVerify} className="w-full" disabled={!imageUploaded}>
-              Verify Image
-            </Button>
+            
           </div>
         )}
 

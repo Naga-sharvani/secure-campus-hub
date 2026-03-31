@@ -17,9 +17,10 @@ export interface User {
 }
 
 export interface SecuritySetup {
-  securityQuestion: string;
-  securityAnswer: string;
-  verificationImageUrl?: string;
+  method: "question" | "image";
+  securityQuestion?: string;
+  securityAnswer?: string;
+  imageLabel?: string;
 }
 
 interface AuthContextType {
@@ -60,9 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("securitySetup",JSON.stringify(securitySetup));
     }
   });
-
- 
-
   const login = useCallback((username: string, password: string)=> {
     const normalisedName= username.toLowerCase().trim();
     const role= getRole(normalisedName);
@@ -95,35 +93,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true };
   }, [knownUsers, securitySetup]);
 
-  const verifyAdmin = useCallback((answer: string) => {
+  const verifyAdmin = useCallback(
+  (answer: string) => {
     if (!securitySetup || !pendingUser) return false;
-    if (answer.toLowerCase().trim() === securitySetup.securityAnswer.toLowerCase().trim()) {
-      
-      setUser(pendingUser);
-      setPendingUser(null);
-      return true;
+
+    if (securitySetup.method === "question") {
+      if (
+        answer.toLowerCase().trim() ===
+        securitySetup.securityAnswer?.toLowerCase().trim()
+      ) {
+        setUser(pendingUser);
+        setPendingUser(null);
+        return true;
+      }
     }
+
     return false;
-  }, [securitySetup,pendingUser]);
+  },
+  [securitySetup, pendingUser]
+);
 
-
-  const verifySensitiveAction = useCallback((answer: string) => {
+const verifySensitiveAction = useCallback(
+  (answer: string) => {
     if (!securitySetup) return true;
-    return answer.toLowerCase().trim() === securitySetup.securityAnswer.toLowerCase().trim();
-  }, [securitySetup]);
+
+    if (securitySetup.method === "question") {
+      return (
+        answer.toLowerCase().trim() ===
+        securitySetup.securityAnswer?.toLowerCase().trim()
+      );
+    }
+
+    return false;
+  },
+  [securitySetup]
+);
 
   const saveSecuritySetup = useCallback((setup: SecuritySetup) => {
     setSecuritySetup(setup);
   }, []);
 
-  const confirmLogout=useCallback((answer:string)=>{
-    if (answer.toLowerCase().trim() === securitySetup?.securityAnswer.toLowerCase().trim()) {
+const confirmLogout = useCallback(
+  (answer: string) => {
+    if (!securitySetup) return false;
+
+    if (securitySetup.method === "question") {
+      if (
+        answer.toLowerCase().trim() ===
+        securitySetup.securityAnswer?.toLowerCase().trim()
+      ) {
+        setUser(null);
+        setPendingLogout(false);
+        return true;
+      }
+    }
+
+    if (securitySetup.method === "image") {
       setUser(null);
       setPendingLogout(false);
       return true;
     }
+
     return false;
-  },[securitySetup]);
+  },
+  [securitySetup]
+);
 
   const logout = useCallback(() => {
     // setUser(null);
