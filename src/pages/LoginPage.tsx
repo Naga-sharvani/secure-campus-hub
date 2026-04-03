@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Shield, Lock, Eye, EyeOff, AlertTriangle, CheckCircle, Upload, User } from "lucide-react";
+import { useState,useEffect } from "react";
+import { Shield, Lock, AlertTriangle, CheckCircle, Upload, User,Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,17 +14,27 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole | "">("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState<LoginStep>("credentials");
   const [securityAnswer, setSecurityAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setPageLoading(false);
+  }, 800); // adjust duration if needed
+
+  return () => clearTimeout(timer);
+}, []);
+  
   const handleLogin = () => {
+    setLoading(true);
     if (!username || !password) {
       setError("All fields are required");
       return;
     }
-
+    
     const detectedRole=getRole(username);
     if(!detectedRole){
       setError("Invalid username");
@@ -34,10 +44,10 @@ const LoginPage = () => {
     const result=login(username,password);
     if(!result.success){
       setError(result.error || "Login failed");
+      setLoading(false);
       return;
     }
 
-    //understand theseee
    else if (result.needsAdminVerification) {
   if (securitySetup?.method === "image") {
     setStep("admin-image");
@@ -45,11 +55,9 @@ const LoginPage = () => {
     setStep("admin-verify");
   }
   setError("");
+  setLoading(false);
 }
-
-  };
-
-  // console.log(import.meta.env.VITE_HF_API_KEY);
+};
 
   const handleAdminVerify = () => {
     if (verifyAdmin(securityAnswer)) {
@@ -59,26 +67,39 @@ const LoginPage = () => {
     }
   };
 
-  const handleImageVerify = async (file: File) => {
+const handleImageVerify = async (file: File) => {
   if (!securitySetup?.imageLabel) return;
 
-  const formData = new FormData();
-  formData.append("image", file);
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    setLoading(true);
+    const res = await fetch("http://localhost:5000/match", {
+      method: "POST",
+      body: formData,
+    });
 
-  const res = await fetch("http://localhost:5000/match", {
-    method: "POST",
-    body: formData,
-  });
+    const data = await res.json();
 
-  const data = await res.json();
+    console.log("YOLO result:", data);
 
-  if (
-    data.label?.toLowerCase() ===
-    securitySetup.imageLabel.toLowerCase()
-  ) {
-    verifyAdmin("");
-  } else {
-    setError("Incorrect object detected");
+    if (
+      data.objects[0]?.toLowerCase() ===
+      securitySetup.imageLabel.toLowerCase()
+    ) {
+      setLoading(false);
+      console.log("Calling verifyAdmin()");
+      verifyAdmin("");
+
+    } else {
+      setLoading(false);
+      console.log("Label mismatch");
+      setError("Incorrect object detected");
+    }
+
+  } catch (err) {
+    console.error(err);
+    setError("Verification failed");
   }
 };
 
@@ -87,10 +108,24 @@ const LoginPage = () => {
     
     localStorage.setItem("role",role);
     localStorage.setItem("email",email);
-
   }
 
+  if (pageLoading) {
   return (
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('/../back.jpeg')" }}>
+      
+      <div className="glass-card p-8 flex flex-col items-center gap-4">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <p className="text-sm text-muted-foreground">
+          Loading Please wait...
+        </p>
+      </div>
+    </div>
+  );
+}
+
+  return (    
     <div
   className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
   style={{ backgroundImage: "url('/../back.jpeg')" }}>
@@ -104,9 +139,7 @@ const LoginPage = () => {
       <div className="w-full max-w-md relative">
         {/* Logo */}
         <div className="text-center mb-8 animate-slide-up">
-          {/* <div className="inline-flex p-4 rounded-2xl bg-primary/10 mb-4">
-            <Shield className="h-10 w-10 text-primary" />
-          </div> */}
+          
           <h1 className="text-2xl font-bold text-foreground">College ERP Portal</h1>
         </div>
 
@@ -135,19 +168,12 @@ const LoginPage = () => {
                 <div className="relative mt-1">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type="password"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                    onChange={(e) => {setPassword(e.target.value); setError(""); }}
                     placeholder="Enter password"
                     className="bg-muted/50 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                  />                  
                 </div>
               </div>
 
@@ -160,16 +186,19 @@ const LoginPage = () => {
                 </div>
               )}
 
-              <Button onClick={handleLogin} className="w-full gap-2">
-                <Lock className="h-4 w-4" />
-                Secure Login
+              <Button onClick={handleLogin} disabled={loading} className="w-full gap-2">
+              {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    Secure Login
+                  </>
+                )}
               </Button>
-
-              <div className="pt-3 border-t border-border/50">
-                {/* <p className="text-xs text-muted-foreground text-center font-mono">
-                  Demo: student1 / faculty1 / admin1 • Password: pass123
-                </p> */}
-              </div>
             </div>
           )}
 
@@ -186,7 +215,7 @@ const LoginPage = () => {
 
               <div>
                 <Label className="text-muted-foreground text-sm">Security Question</Label>
-                <p className="text-foreground font-medium mt-1">What is your pet name?</p>
+                <p className="text-foreground font-medium mt-1">{securitySetup?.securityQuestion}</p>
               </div>
 
               <div>

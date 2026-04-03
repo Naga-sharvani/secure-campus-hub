@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: normalisedName,
       role,
       name,
-      rollNumber : role==="student"? "!60124733087": undefined,
+      rollNumber : role==="student"? "160124733087": undefined,
       department: role==="admin"? "Administrator":"Computer Science"
     }
     

@@ -27,9 +27,13 @@ export function LogoutModal({ open, onClose }: LogoutModalProps) {
 
 const handleConfirm = () => {
   if (method === "question") {
+    const selectedQuestion = useCustom
+      ? customQuestion
+      : question;
+
     saveSecuritySetup({
       method: "question",
-      securityQuestion: useCustom ? customQuestion : question,
+      securityQuestion: selectedQuestion,
       securityAnswer: answer,
     });
   }
@@ -43,7 +47,6 @@ const handleConfirm = () => {
 
   const success = confirmLogout(answer);
   if (!success) return;
-
   onClose();
 };
 
