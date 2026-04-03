@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Shield, AlertTriangle, CheckCircle, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,14 @@ interface VerificationModalProps {
 export function VerificationModal({ open, onClose, onVerified, actionLabel }: VerificationModalProps) {
   const { securitySetup, verifySensitiveAction } = useAuth();
   const [answer, setAnswer] = useState("");
-  const [step, setStep] = useState<"question" | "image" | "success">(
-  securitySetup?.method === "image"
-    ? "image"
-    : "question"
-  );  
+  const [step, setStep] = useState<"question" | "image" | "success">("question");
+
+  useEffect(() => {
+  if (securitySetup?.method === "image") {
+    setStep("image");
+  }
+  }, [securitySetup]);
+
   const [error, setError] = useState("");
 
   if (!open) return null;

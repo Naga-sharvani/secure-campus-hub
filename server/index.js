@@ -1,28 +1,44 @@
 import express from "express";
 import cors from "cors";
-import { sendToYolo } from "./yolo.service.js";
-import { base64ToBuffer } from "./utils.js";
+import multer from "multer";
+import FormData from "form-data";
+import fetch from "node-fetch";
 
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: "50mb" }));
 
-app.post("/match", async (req, res) => {
-  console.log("MATCH ROUTE HIT");
+app.use(cors());
+
+const upload = multer();
+
+app.post("/match", upload.single("image"), async (req, res) => {
   try {
-    const { text, image } = req.body;
-    console.log("Received request:", text);
-    console.log("Image exists:", !!image);
-    const buffer = base64ToBuffer(image);
-    const objects = await sendToYolo(buffer);
-    console.log("YOLO returned:", objects);
-    const match = objects.includes(text.toLowerCase());
-    res.json({ match, detected: objects });
-    
+    if (!req.file) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    const response = await fetch("http://127.0.0.1:8000/detect", {
+      method: "POST",
+      body: formData,
+      headers: formData.getHeaders(),
+    });
+
+    const data = await response.json();
+
+    res.json(data);
+
   } catch (err) {
-  console.error("FULL ERROR:", err.response?.data || err.message);
-  res.status(500).json({ error: "Detection failed" });
-}
+    console.error("Forwarding error:", err);
+    res.status(500).json({ error: "YOLO request failed" });
+  }
 });
 
-app.listen(5000, () => console.log("Server running"));
+app.listen(5000, () => {
+  console.log("Server running on http://localhost:5000");
+});

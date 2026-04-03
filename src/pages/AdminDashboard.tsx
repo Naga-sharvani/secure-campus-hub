@@ -54,41 +54,7 @@ const AdminDashboard = () => {
     setNewNotice({ title: "", content: "" });
     setShowNewNotice(false);
   };
-
- const testImage = async (file: File) => {
-  const base64 = await fileToBase64(file);
-   const securitySetup = JSON.parse(
-    localStorage.getItem("securitySetup") || "{}"
-    );
-
-    const label = securitySetup.imageLabel;
-
-  const res = await fetch("http://localhost:5000/match", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-   
-    body: JSON.stringify({
-      text: label,  
-      image: base64,
-    }),
-  });
-
-  const data = await res.json();
-  console.log("YOLO result:", data);
-};
-const fileToBase64 = (file: File) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1]);
-    };    reader.onerror = reject;
-  });
-
-
+  
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "attendance", label: "Attendance", icon: <ClipboardList className="h-4 w-4" /> },
     { id: "accounts", label: "Accounts", icon: <Users className="h-4 w-4" /> },
@@ -103,16 +69,7 @@ const fileToBase64 = (file: File) =>
         <p className="text-sm text-muted-foreground">Full access • All actions require verification</p>
       </div>
 
-      <div className="mb-6">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (file) testImage(file);
-      }}
-      />
-      </div>
+      
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

@@ -106,6 +106,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingUser(null);
         return true;
       }
+      return false;
+    }
+
+    if (securitySetup.method === "image") {
+      // image handled in VerificationModal
+      setUser(pendingUser);
+      setPendingUser(null);
+      return true;
     }
 
     return false;
@@ -124,11 +132,15 @@ const verifySensitiveAction = useCallback(
       );
     }
 
+    // Allow verification modal to handle image mode
+    if (securitySetup.method === "image") {
+      return true;
+    }
+
     return false;
   },
   [securitySetup]
 );
-
   const saveSecuritySetup = useCallback((setup: SecuritySetup) => {
     setSecuritySetup(setup);
   }, []);

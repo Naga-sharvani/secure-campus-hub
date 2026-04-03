@@ -1,9 +1,17 @@
 from fastapi import FastAPI, UploadFile, File
 from ultralytics import YOLO
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 model = YOLO("yolov8n.pt")
 print("hey")
 

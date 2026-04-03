@@ -10,7 +10,7 @@ import {getRole} from "../lib/auth.js";
 type LoginStep = "credentials" | "admin-verify" | "admin-image";
 
 const LoginPage = () => {
-  const { login, verifyAdmin } = useAuth();
+  const { login, verifyAdmin,securitySetup} = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole | "">("");
@@ -18,7 +18,6 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [step, setStep] = useState<LoginStep>("credentials");
   const [securityAnswer, setSecurityAnswer] = useState("");
-  const [imageUploaded, setImageUploaded] = useState(false);
 
   const handleLogin = () => {
     if (!username || !password) {
@@ -39,10 +38,14 @@ const LoginPage = () => {
     }
 
     //understand theseee
-    else if(result.needsAdminVerification){
-      setStep("admin-verify");
-      setError("");
-    }
+   else if (result.needsAdminVerification) {
+  if (securitySetup?.method === "image") {
+    setStep("admin-image");
+  } else {
+    setStep("admin-verify");
+  }
+  setError("");
+}
 
   };
 
@@ -56,12 +59,28 @@ const LoginPage = () => {
     }
   };
 
-  const handleImageVerify = () => {
-    if (imageUploaded) {
-      // Image verified (mock), complete admin login
-      verifyAdmin(securityAnswer); // This will set the user
-    }
-  };
+  const handleImageVerify = async (file: File) => {
+  if (!securitySetup?.imageLabel) return;
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("http://localhost:5000/match", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (
+    data.label?.toLowerCase() ===
+    securitySetup.imageLabel.toLowerCase()
+  ) {
+    verifyAdmin("");
+  } else {
+    setError("Incorrect object detected");
+  }
+};
 
   function handleLoginRole(email){
     const role= getRole(email);
@@ -209,23 +228,18 @@ const LoginPage = () => {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-4">Upload your verification image</p>
                 <label className={`flex flex-col items-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
-                  imageUploaded ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                  "border-border hover:border-primary/50"
                 }`}>
-                  {imageUploaded ? (
-                    <CheckCircle className="h-10 w-10 text-primary" />
-                  ) : (
+                 
                     <Upload className="h-10 w-10 text-muted-foreground" />
-                  )}
+                 
                   <span className="text-sm text-muted-foreground">
-                    {imageUploaded ? "Image match verified ✓" : "Click to upload verification image"}
+                    Click to upload verification image
                   </span>
-                  <input type="file" className="hidden" accept="image/*" onChange={() => setImageUploaded(true)} />
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageVerify(e.target.files?.[0]!)} />
                 </label>
               </div>
 
-              <Button onClick={handleImageVerify} className="w-full" disabled={!imageUploaded}>
-                Complete Verification & Login
-              </Button>
             </div>
           )}
         </div>
