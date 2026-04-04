@@ -25,9 +25,14 @@ dist-ssr
 
 # Environment variables
 .env
+.env.example
 
 # Python
 venv/
 ml-service/venv/
 __pycache__/
 *.pyc
+
+*.webp
+*.jpg
+bun.lockb
