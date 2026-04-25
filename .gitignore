@@ -32,6 +32,7 @@ venv/
 ml-service/venv/
 __pycache__/
 *.pyc
+yolov8n.pt
 
 *.webp
 *.jpg
