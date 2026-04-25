@@ -9,7 +9,7 @@ export const sendToYolo = async (buffer) => {
     formData.append("file", buffer, "image.jpg");
 
     const res = await axios.post(
-      "http://localhost:8000/detect",
+      "https://secure-campus-hub.onrender.com/detect",
       formData,
       { headers: formData.getHeaders() }
     );

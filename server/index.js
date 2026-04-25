@@ -5,7 +5,9 @@ import { sendToYolo } from "./yolo.service.js";
 import multer from "multer";
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://secure-campus-hub.vercel.app"
+}));
 const upload = multer();
 
 //receives image from frontend, forwards it to YOLO, and returns the detected objects back to frontend
@@ -27,5 +29,5 @@ app.post("/match", upload.single("image"), async (req, res) => {
 
 // Start Express server on port 5000
 app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+  console.log("Server running");
 });
