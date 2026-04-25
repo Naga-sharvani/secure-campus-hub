@@ -141,8 +141,6 @@ http://localhost:5000
 
 4️⃣ Start Frontend
 
-cd client
-
 npm install
 
 npm run dev
