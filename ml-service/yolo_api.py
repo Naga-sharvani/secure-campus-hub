@@ -14,9 +14,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-model = YOLO("yolov8n.pt")
-print("hey")
 
+try:
+    model = YOLO("yolov8n.pt")
+except Exception as e:
+    print("Model loading failed:", e)
+    
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(await file.read()))
