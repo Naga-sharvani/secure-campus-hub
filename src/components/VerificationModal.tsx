@@ -46,7 +46,7 @@ export function VerificationModal({ open, onClose, onVerified, actionLabel }: Ve
   const formData = new FormData();
   formData.append("image", file);
 
-  const res = await fetch("http://localhost:8000/match", {
+  const res = await fetch("https://secure-campus-hub-server.onrender.com/match", {
     method: "POST",
     body: formData,
   });

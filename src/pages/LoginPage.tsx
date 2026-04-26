@@ -74,7 +74,7 @@ const handleImageVerify = async (file: File) => {
     const formData = new FormData();
     formData.append("image", file);
     setLoading(true);
-    const res = await fetch("http://localhost:5000/match", {
+    const res = await fetch("https://secure-campus-hub-server.onrender.com/match", {
       method: "POST",
       body: formData,
     });
