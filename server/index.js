@@ -26,6 +26,9 @@ app.post("/match", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: "YOLO request failed" });
   }
 });
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
 
 
 // Start Express server 
